@@ -19,7 +19,6 @@ client = util.client
 
 repos.each do |_k, v|
   repo_name = v['title']
-  next unless repo_name =~ %r{motd}
   puts "Querying the following PRs in #{repo_name}:"
   page_num = 1
   suspect_prs = []
