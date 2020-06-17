@@ -21,7 +21,6 @@ client = util.client
 
 repos.each do |_k, v|
   repo_name = v['title']
-  next unless repo_name.include? 'motd' or repo_name.include? 'vsphere'
   puts "\nQuerying the following PRs in #{repo_name}:"
   page_num = 1
   suspect_prs = []
