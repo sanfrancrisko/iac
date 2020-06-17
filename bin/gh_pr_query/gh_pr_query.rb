@@ -1,12 +1,13 @@
 #!/usr/bin/env ruby
 # frozen_string_literal: true
 
+INTERESTED_FILE = '.github/workflows'
+
 raise 'Please set Github API token in ENV VAR $GITHUB_TOKEN' unless ENV['GITHUB_TOKEN']
 
 require_relative 'octokit_utils'
 require 'json'
 
-INTERESTED_FILE = '.github/workflows'
 MANAGED_MODULES_URI = 'https://puppetlabs.github.io/iac/modules.json'
 uri = URI.parse(MANAGED_MODULES_URI)
 response = Net::HTTP.get_response(uri)
