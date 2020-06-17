@@ -21,6 +21,7 @@ client = util.client
 
 repos.each do |_k, v|
   repo_name = v['title']
+  next unless repo_name.include? 'motd' or repo_name.include? 'vsphere'
   puts "\nQuerying the following PRs in #{repo_name}:"
   page_num = 1
   suspect_prs = []
@@ -30,8 +31,17 @@ repos.each do |_k, v|
     pr_res.each do |pr|
       pr_number = pr['number']
       if pr[:created_at].to_i < DATE_TIME_CUT_OFF
-        puts "\n=== PR ##{pr_number} was created before 2020-07-01 12:00:00 - no more PRs will be processed for #{repo_name} ===\n"
+        puts "\n=== PR ##{pr_number} was created before 2020-07-01 12:00:00 - no more PRs will be processed for #{repo_name} ==="
         pr_max_date = true
+        unless suspect_prs.empty?
+          filename = "#{repo_name}_#{DateTime.now.strftime('%F_%T')}".gsub(/[-,:]/, '_')
+          puts "=== Writing results to #{filename} (#{suspect_prs.size} PRs to be inspected) ===\n"
+          File.open(filename, 'w') do |file|
+            suspect_prs.each do |pr|
+              file.puts pr
+            end
+          end
+        end
       end
       break if pr_max_date
       puts "##{pr_number}: "
@@ -45,13 +55,5 @@ repos.each do |_k, v|
     end
     page_num += 1
     pr_res = client.get("repos/puppetlabs/#{repo_name}/pulls", state: 'all', page: page_num)
-  end
-  next if suspect_prs.empty?
-  filename = "#{repo_name}_#{DateTime.now.strftime('%F_%T')}".gsub(/[-,:]/, '_')
-  puts "Writing results to #{filename} (#{suspect_prs.size} PRs to be inspected)"
-  File.open(filename, 'w') do |file|
-    suspect_prs.each do |pr|
-      file.puts pr
-    end
   end
 end
