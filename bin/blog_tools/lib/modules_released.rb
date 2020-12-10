@@ -15,28 +15,27 @@ request = http.get(FORGE_URI.request_uri)
 resp = JSON.parse(request.body)
 forge_modules = resp['results']
                 .select { |forge_module| iac_repos.include? ("puppetlabs/" + forge_module['slug']) }
-                .select { |forge_module| Date.parse(forge_module['updated_at']).strftime('%s').to_i >= last_blog_post_utc_time }
-
-if forge_modules.size == 0
-  puts 'No modules released this week!'
-else
-  puts "#{forge_modules.size} modules released since last blog post:" unless forge_modules.size == 0
-end
+                # .select { |forge_module| Date.parse(forge_module['updated_at']).strftime('%s').to_i >= last_blog_post_utc_time }
 
 
 @module_releases = []
 
+puppet_7_modules = []
+modules_still_needing_pushed = []
 forge_modules.each do |forge_module|
-  name = forge_module['current_release']['metadata']['name']
-  ver = forge_module['current_release']['version']
-  proj_url = forge_module['current_release']['metadata']['project_page']
-  module_link_url = "[#{name}]: #{proj_url}"
-  @links << module_link_url unless @links.include? module_link_url
-
-  @module_releases << {
-    version: "`#{ver}`",
-    module_link_ref: "[`#{name}`][#{name}]"
-  }
-
-  puts "- #{name} (#{ver})"
+  module_puppet_requirements = forge_module['current_release']['metadata']['requirements']
+                                   .select { |requirement| requirement['name'] == 'puppet' }
+                                   .first
+  puppet_7_modules << forge_module['slug'] if module_puppet_requirements['version_requirement'].include? '< 8.0.0'
+  modules_still_needing_pushed << forge_module['slug'] if module_puppet_requirements['version_requirement'].include? '< 7.0.0'
 end
+
+puts "=========================================="
+puts "== PUPPET 7 COMPATIBLE MODULES ON FORGE =="
+puts "=========================================="
+puppet_7_modules.sort.each { |puppet_module| puts " - #{puppet_module}"}
+puts "============================================"
+puts "== MODULES STILL NEEDING PUSHED TO FORGE =="
+modules_still_needing_pushed.sort.each { |puppet_module| puts " - #{puppet_module}"}
+puts "============================================"
+exit(0)
