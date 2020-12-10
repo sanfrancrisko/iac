@@ -15,10 +15,6 @@ request = http.get(FORGE_URI.request_uri)
 resp = JSON.parse(request.body)
 forge_modules = resp['results']
                 .select { |forge_module| iac_repos.include? ("puppetlabs/" + forge_module['slug']) }
-                # .select { |forge_module| Date.parse(forge_module['updated_at']).strftime('%s').to_i >= last_blog_post_utc_time }
-
-
-@module_releases = []
 
 puppet_7_modules = []
 modules_still_needing_pushed = []
@@ -36,6 +32,7 @@ puts "=========================================="
 puppet_7_modules.sort.each { |puppet_module| puts " - #{puppet_module}"}
 puts "============================================"
 puts "== MODULES STILL NEEDING PUSHED TO FORGE =="
+puts "============================================"
 modules_still_needing_pushed.sort.each { |puppet_module| puts " - #{puppet_module}"}
 puts "============================================"
 exit(0)
